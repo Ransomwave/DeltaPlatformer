@@ -14,7 +14,7 @@ GameObject:
   - component: {fileID: 2021105764634153633}
   m_Layer: 0
   m_Name: FlyingEnemy
-  m_TagString: Untagged
+  m_TagString: Enemy
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -110,6 +110,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6bb55d0a952900d469715273900b913e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::EnemyBehavior
+  _hp: 2
+  _velocity: 3
+  _distance: 10
 --- !u!1 &8331324822774442786
 GameObject:
   m_ObjectHideFlags: 0

@@ -29,6 +29,11 @@ namespace deltaformer {
                 _direction = 1;
                 Flip();
             }
+
+            if (_hp <= 0) {
+                _hp = 0;
+                EnemyDeath();
+            }
         }
 
         private void FixedUpdate() {
@@ -36,7 +41,7 @@ namespace deltaformer {
         }
 
 
-        // Dibuja una línea roja en la pestaña 'Scene' para ver la ruta horizontal en el editor
+        // Draw a line to see the path of each enemy
         private void OnDrawGizmosSelected() {
             Gizmos.color = Color.red;
             var start = Application.isPlaying ? _startPos : (Vector2)transform.position;
@@ -47,6 +52,10 @@ namespace deltaformer {
         private void Flip() {
             _isFacingRight = !_isFacingRight;
             transform.Rotate(0f, 180f, 0f);
+        }
+
+        private void EnemyDeath() {
+            Destroy(gameObject);
         }
     }
 }

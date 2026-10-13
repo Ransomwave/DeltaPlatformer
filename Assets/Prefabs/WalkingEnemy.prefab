@@ -105,7 +105,7 @@ GameObject:
   - component: {fileID: 5034612493956841292}
   m_Layer: 0
   m_Name: WalkingEnemy
-  m_TagString: Untagged
+  m_TagString: Enemy
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -211,3 +211,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6bb55d0a952900d469715273900b913e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::EnemyBehavior
+  _hp: 4
+  _velocity: 2
+  _distance: 4
