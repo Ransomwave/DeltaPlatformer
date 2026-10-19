@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -14,6 +15,8 @@ namespace deltaformer {
         private InputAction _moveAction;
         private InputAction _attackAction;
         private InputAction _jumpAction;
+
+        public event Action OnPlayerAttack = delegate { };
 
         void Awake() {
             _rigidBody = GetComponent<Rigidbody2D>();
@@ -58,6 +61,7 @@ namespace deltaformer {
         }
 
         private void OnAttack(InputAction.CallbackContext context) {
+            OnPlayerAttack.Invoke();
             print("Player attacked!!!");
         }
 
