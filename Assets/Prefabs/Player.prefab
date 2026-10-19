@@ -48,7 +48,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: '::'
   speed: 5
-  jumpForce: 5
+  jumpForce: 7
 --- !u!61 &8343799287234668703
 BoxCollider2D:
   m_ObjectHideFlags: 0
