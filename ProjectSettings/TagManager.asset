@@ -5,11 +5,12 @@ TagManager:
   serializedVersion: 3
   tags:
   - Enemy
+  - Floor
   layers:
   - Default
   - TransparentFX
   - Ignore Raycast
-  - 
+  - Floor
   - Water
   - UI
   - 
@@ -41,6 +42,9 @@ TagManager:
   m_SortingLayers:
   - name: Default
     uniqueID: 0
+    locked: 0
+  - name: Floor
+    uniqueID: 860974845
     locked: 0
   m_RenderingLayers:
   - Default
