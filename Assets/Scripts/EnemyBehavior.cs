@@ -9,14 +9,16 @@ namespace deltaformer {
 
         [SerializeField] private float _distance = 5f;
         private int _direction = 1;
-        private bool _isFacingRight = true;
+        [SerializeField] private GameObject _sprite;
 
         private Rigidbody2D _rb;
         private Vector2 _startPos;
+        private Animation anim;
 
         private void Start() {
             _rb = GetComponent<Rigidbody2D>();
             _startPos = transform.position;
+            anim = gameObject.GetComponentInChildren<Animation>();
         }
 
         private void Update() {
@@ -24,10 +26,10 @@ namespace deltaformer {
 
             if (_direction == 1 && distanceFromStart >= _distance) {
                 _direction = -1;
-                Flip();
+                Flip(false);
             } else if (_direction == -1 && distanceFromStart <= 0) {
                 _direction = 1;
-                Flip();
+                Flip(true);
             }
 
             if (_hp <= 0) {
@@ -49,9 +51,12 @@ namespace deltaformer {
             Gizmos.DrawLine(start, end);
         }
 
-        private void Flip() {
-            _isFacingRight = !_isFacingRight;
-            transform.Rotate(0f, 180f, 0f);
+        private void Flip(bool right) {
+            SpriteRenderer sp = _sprite.GetComponent<SpriteRenderer>();
+            if(sp != null) {
+                sp.flipX = right;
+            }
+            
         }
 
         private void EnemyDeath() {
