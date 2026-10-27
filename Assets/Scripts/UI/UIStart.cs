@@ -1,15 +1,15 @@
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 namespace deltaformer {
     public class UIStart : MonoBehaviour {
-        // Start is called once before the first execution of Update after the MonoBehaviour is created
-        void Start() {
-
+        public void PlayGame() {
+            SceneManager.LoadScene("Level1");
         }
 
-        // Update is called once per frame
-        void Update() {
-
+        public void QuitGame() {
+            Debug.Log("Saliendo del juego...");
+            Application.Quit();
         }
     }
 
