@@ -1,5 +1,6 @@
 using System;
 using System.Collections;
+using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -7,6 +8,7 @@ namespace deltaformer {
     public class PlayerController : MonoBehaviour, ILivingEntity {
         [SerializeField] private float speed = 5f;
         [SerializeField] private float jumpForce = 5f;
+        [SerializeField] private float invincibilityTime = 1f; // Invincibility time in seconds after taking damage
 
         private int _hp = 3;
 
@@ -17,7 +19,8 @@ namespace deltaformer {
         private Collider2D _hitboxCollider;
 
         private bool _isAttacking = false;
-        private bool isGrounded = false;
+        private bool _isGrounded = false;
+        private bool _isInvincible = false;
 
         private InputAction _moveAction;
         private InputAction _attackAction;
@@ -72,12 +75,12 @@ namespace deltaformer {
         }
 
         private void OnJump(InputAction.CallbackContext context) {
-            if (!isGrounded) {
+            if (!_isGrounded) {
                 return;
             }
 
             _rigidBody.AddForce(Vector2.up * jumpForce, ForceMode2D.Impulse);
-            isGrounded = false;
+            _isGrounded = false;
         }
 
         private void OnAttack(InputAction.CallbackContext context) {
@@ -114,8 +117,14 @@ namespace deltaformer {
 
         void OnCollisionEnter2D(Collision2D collision) {
             if (collision.GetContact(0).normal.y > 0.5f) {
-                isGrounded = true;
+                _isGrounded = true;
             }
+        }
+
+        public IEnumerator HandleHitInvincibility(float duration) {
+            _isInvincible = true;
+            yield return new WaitForSeconds(duration);
+            _isInvincible = false;
         }
 
         public void TakeDamage(int damage) {
@@ -123,7 +132,14 @@ namespace deltaformer {
 
             print($"Player took {damage} damage! HP: {_hp}");
 
+            if (_isInvincible) {
+                return;
+            }
+
+            StartCoroutine(HandleHitInvincibility(invincibilityTime));
+
             OnPlayerDamaged.Invoke();
+
             if (_hp <= 0) {
                 OnPlayerDie.Invoke();
             }
