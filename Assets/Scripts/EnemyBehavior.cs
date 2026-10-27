@@ -1,25 +1,26 @@
+using System;
 using UnityEngine;
 
 namespace deltaformer {
-    public class EnemyBehavior : MonoBehaviour {
+    public class EnemyBehavior : MonoBehaviour, ILivingEntity {
         [Header("Enemy settings")] [SerializeField]
         private int _hp = 2;
+        [SerializeField] private int _damage = 1;
 
         [SerializeField] private float _velocity = 2f;
 
         [SerializeField] private float _distance = 5f;
         private int _direction = 1;
         [SerializeField] private GameObject _sprite;
+        [SerializeField] private bool _canHit;
 
         private Rigidbody2D _rb;
         private Vector2 _startPos;
-        private Animation anim;
         private SpriteRenderer _spriteRenderer;
 
         private void Start() {
             _rb = GetComponent<Rigidbody2D>();
             _startPos = transform.position;
-            anim = gameObject.GetComponentInChildren<Animation>();
 
             if (_sprite != null) {
                 _spriteRenderer = _sprite.GetComponent<SpriteRenderer>();
@@ -38,7 +39,6 @@ namespace deltaformer {
             }
 
             if (_hp <= 0) {
-                _hp = 0;
                 EnemyDeath();
             }
         }
@@ -63,7 +63,26 @@ namespace deltaformer {
         }
 
         private void EnemyDeath() {
+            _hp = 0;
             Destroy(gameObject);
+        }
+        
+        public void TakeDamage(int damage) {
+            _hp -= damage;
+        }
+        
+
+        private void OnCollisionEnter2D(Collision2D other) {
+            if(!_canHit) return;
+            
+            
+            if (!other.gameObject.tag.Contains("Player")) {
+                TryGetComponent<ILivingEntity>(out ILivingEntity livingEntity);
+                if (livingEntity is not null) {
+                    livingEntity.TakeDamage(_damage);
+                }
+            }
+            
         }
     }
 }
