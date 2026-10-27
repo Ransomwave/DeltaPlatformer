@@ -32,7 +32,7 @@ namespace deltaformer {
         }
 
         private IEnumerator MoveStone(Vector2 origin, Vector2 target) {
-            yield return new WaitForSeconds(1);
+            yield return new WaitForSeconds(0.5f);
 
             var duration = 1f;
             var elapsed = 0f;
