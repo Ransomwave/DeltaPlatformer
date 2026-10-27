@@ -3,7 +3,7 @@ using UnityEngine;
 using UnityEngine.InputSystem;
 
 namespace deltaformer {
-    public class PlayerController : MonoBehaviour {
+    public class PlayerController : MonoBehaviour, ILivingEntity {
         [SerializeField] private float speed = 5f;
         [SerializeField] private float jumpForce = 5f;
 
@@ -76,5 +76,8 @@ namespace deltaformer {
             }
         }
 
+        public void TakeDamage(int damage) {
+            print($"Player took {damage} damage!");
+        }
     }
 }
