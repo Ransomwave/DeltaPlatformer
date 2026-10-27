@@ -8,7 +8,7 @@ namespace deltaformer {
         [SerializeField] private float speed = 5f;
         [SerializeField] private float jumpForce = 5f;
 
-        private float _hp = 100f;
+        private int _hp = 3;
 
         private Vector2 _moveDirection;
         private Vector2 _currentLookDirection = Vector2.right;
@@ -24,6 +24,8 @@ namespace deltaformer {
         private InputAction _jumpAction;
 
         public event Action OnPlayerAttack = delegate { };
+        public event Action OnPlayerDie = delegate { };
+        public event Action OnPlayerDamaged = delegate { };
 
         void Awake() {
             _rigidBody = GetComponent<Rigidbody2D>();
@@ -118,7 +120,13 @@ namespace deltaformer {
 
         public void TakeDamage(int damage) {
             _hp -= damage;
+
             print($"Player took {damage} damage! HP: {_hp}");
+
+            OnPlayerDamaged.Invoke();
+            if (_hp <= 0) {
+                OnPlayerDie.Invoke();
+            }
         }
     }
 }
