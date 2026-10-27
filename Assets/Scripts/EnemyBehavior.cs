@@ -14,11 +14,16 @@ namespace deltaformer {
         private Rigidbody2D _rb;
         private Vector2 _startPos;
         private Animation anim;
+        private SpriteRenderer _spriteRenderer;
 
         private void Start() {
             _rb = GetComponent<Rigidbody2D>();
             _startPos = transform.position;
             anim = gameObject.GetComponentInChildren<Animation>();
+
+            if (_sprite != null) {
+                _spriteRenderer = _sprite.GetComponent<SpriteRenderer>();
+            }
         }
 
         private void Update() {
@@ -52,11 +57,9 @@ namespace deltaformer {
         }
 
         private void Flip(bool right) {
-            SpriteRenderer sp = _sprite.GetComponent<SpriteRenderer>();
-            if(sp != null) {
-                sp.flipX = right;
+            if (_spriteRenderer is not null) {
+                _spriteRenderer.flipX = right;
             }
-            
         }
 
         private void EnemyDeath() {
