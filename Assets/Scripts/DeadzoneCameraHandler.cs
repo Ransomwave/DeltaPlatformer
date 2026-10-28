@@ -1,44 +1,44 @@
 using UnityEngine;
 
 public class DeadzoneCameraHandler : MonoBehaviour {
-    public Transform target;
+    [SerializeField] private Transform _target;
 
-    public float horizontalLimit = 2f;
-    public float verticalLimit = 1.5f;
+    [SerializeField] private float _horizontalLimit = 2f;
+    [SerializeField] private float _verticalLimit = 1.5f;
 
-    public float smoothTime = 0.15f;
+    [SerializeField] private float _smoothTime = 0.15f;
 
-    private Vector3 velocity;
+    private Vector3 _velocity;
 
     private void LateUpdate() {
-        if (target == null) {
+        if (_target == null) {
             return;
         }
 
         var desired = transform.position;
-        var targetPos = target.position;
+        var targetPos = _target.position;
 
         // horizontal dead zone
-        if (targetPos.x < desired.x - horizontalLimit) {
-            desired.x = targetPos.x + horizontalLimit;
-        } else if (targetPos.x > desired.x + horizontalLimit) {
-            desired.x = targetPos.x - horizontalLimit;
+        if (targetPos.x < desired.x - _horizontalLimit) {
+            desired.x = targetPos.x + _horizontalLimit;
+        } else if (targetPos.x > desired.x + _horizontalLimit) {
+            desired.x = targetPos.x - _horizontalLimit;
         }
 
         // vertical dead zone
-        if (targetPos.y < desired.y - verticalLimit) {
-            desired.y = targetPos.y + verticalLimit;
-        } else if (targetPos.y > desired.y + verticalLimit) {
-            desired.y = targetPos.y - verticalLimit;
+        if (targetPos.y < desired.y - _verticalLimit) {
+            desired.y = targetPos.y + _verticalLimit;
+        } else if (targetPos.y > desired.y + _verticalLimit) {
+            desired.y = targetPos.y - _verticalLimit;
         }
 
-        transform.position = Vector3.SmoothDamp(transform.position, desired, ref velocity, smoothTime);
+        transform.position = Vector3.SmoothDamp(transform.position, desired, ref _velocity, _smoothTime);
     }
 
 
     private void OnDrawGizmos() {
         Gizmos.color = Color.yellow;
         Gizmos.DrawWireCube(transform.position,
-            new Vector3(horizontalLimit * 2f, verticalLimit * 2f, 0f));
+            new Vector3(_horizontalLimit * 2f, _verticalLimit * 2f, 0f));
     }
 }
