@@ -10,6 +10,12 @@ public class DeadzoneCameraHandler : MonoBehaviour {
 
     private Vector3 _velocity;
 
+    private void Start() {
+        if (_target == null) {
+            Debug.LogError("Target not assigned for DeadzoneCameraHandler!");
+        }
+    }
+
     private void LateUpdate() {
         if (_target == null) {
             return;
