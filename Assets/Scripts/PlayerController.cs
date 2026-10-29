@@ -5,6 +5,7 @@ using UnityEngine;
 using UnityEngine.InputSystem;
 
 namespace deltaformer {
+    [RequireComponent(typeof(Rigidbody2D))]
     public class PlayerController : MonoBehaviour, ILivingEntity {
         [SerializeField] private float speed = 5f;
         [SerializeField] private float jumpForce = 5f;
@@ -26,13 +27,27 @@ namespace deltaformer {
         private InputAction _attackAction;
         private InputAction _jumpAction;
 
+        private Animator _animator;
+        private SpriteRenderer _spriteRenderer;
+
+        // contacts whose normal points up (floors)
+        // better than old method because this also ungrounds the plr when walking off ledges
+        private static readonly ContactFilter2D GroundFilter = new() {
+            useNormalAngle = true,
+            minNormalAngle = 45f,
+            maxNormalAngle = 135f
+        };
+
         public event Action OnPlayerAttack = delegate { };
         public event Action OnPlayerDie = delegate { };
         public event Action OnPlayerDamaged = delegate { };
 
-        void Awake() {
+        private void Awake() {
+            _animator = GetComponentInChildren<Animator>();
+            _spriteRenderer = GetComponentInChildren<SpriteRenderer>();
             _rigidBody = GetComponent<Rigidbody2D>();
             _hitboxCollider = transform.Find("Hitbox").GetComponent<Collider2D>();
+
             _moveAction = InputSystem.actions.FindAction("Player/Move");
             _attackAction = InputSystem.actions.FindAction("Player/Attack");
             _jumpAction = InputSystem.actions.FindAction("Player/Jump");
@@ -40,7 +55,7 @@ namespace deltaformer {
             _hitboxCollider.enabled = false;
         }
 
-        void OnEnable() {
+        private void OnEnable() {
             _moveAction.Enable();
             _attackAction.Enable();
             _jumpAction.Enable();
@@ -53,7 +68,7 @@ namespace deltaformer {
             _attackAction.performed += OnAttack;
         }
 
-        void OnDisable() {
+        private void OnDisable() {
             _moveAction.Disable();
             _attackAction.Disable();
             _jumpAction.Disable();
@@ -93,6 +108,8 @@ namespace deltaformer {
             OnPlayerAttack.Invoke();
             _hitboxCollider.enabled = true;
 
+            _animator.SetTrigger("Attack");
+
             if (_currentLookDirection.x > 0) {
                 _hitboxCollider.transform.localPosition = new Vector3(0.5f, 0, 0);
             } else if (_currentLookDirection.x < 0) {
@@ -110,15 +127,18 @@ namespace deltaformer {
             _hitboxCollider.transform.localPosition = new Vector3(0, 0, 0);
         }
 
-        void FixedUpdate() {
+        private void FixedUpdate() {
+            _isGrounded = _rigidBody.IsTouching(GroundFilter);
+
             // Set horizontal speed, but preserve the current falling/rising Y physics speed
             _rigidBody.linearVelocity = new Vector2(_moveDirection.x * speed, _rigidBody.linearVelocity.y);
         }
 
-        void OnCollisionEnter2D(Collision2D collision) {
-            if (collision.GetContact(0).normal.y > 0.5f) {
-                _isGrounded = true;
-            }
+        private void Update() {
+            _animator.SetFloat("Speed", Mathf.Abs(_moveDirection.x));
+            _spriteRenderer.flipX = _currentLookDirection.x < 0;
+            _animator.SetBool("IsGrounded", _isGrounded);
+            _animator.SetFloat("VerticalSpeed", _rigidBody.linearVelocity.y);
         }
 
         public IEnumerator HandleHitInvincibility(float duration) {
