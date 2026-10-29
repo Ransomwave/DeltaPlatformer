@@ -7,9 +7,15 @@ using UnityEngine.InputSystem;
 namespace deltaformer {
     [RequireComponent(typeof(Rigidbody2D))]
     public class PlayerController : MonoBehaviour, ILivingEntity {
-        [SerializeField] private float speed = 5f;
-        [SerializeField] private float jumpForce = 5f;
-        [SerializeField] private float invincibilityTime = 1f; // Invincibility time in seconds after taking damage
+        [SerializeField] private float _speed = 6f;
+        [SerializeField] private float _jumpForce = 10f;
+        [SerializeField] private float _invincibilityTime = 1f; // Invincibility time in seconds after taking damage
+
+        [Header("Attack Settings")]
+        [SerializeField] private float _attackCooldown = 0.3f;
+        private const float _attackPushForce = 5f; // Force applied when attacking
+        private const float _attackDuration = 0.2f;
+
 
         private int _hp = 3;
 
@@ -19,6 +25,7 @@ namespace deltaformer {
         private Rigidbody2D _rigidBody;
         private Collider2D _hitboxCollider;
 
+        private bool _canAttack = true;
         private bool _isAttacking = false;
         private bool _isGrounded = false;
         private bool _isInvincible = false;
@@ -80,6 +87,11 @@ namespace deltaformer {
         }
 
         private void OnMove(InputAction.CallbackContext context) {
+            if (_isAttacking) {
+                _moveDirection = Vector2.zero;
+                return;
+            }
+
             _moveDirection = context.ReadValue<Vector2>();
 
             if (_moveDirection.x > 0) {
@@ -90,16 +102,16 @@ namespace deltaformer {
         }
 
         private void OnJump(InputAction.CallbackContext context) {
-            if (!_isGrounded) {
+            if (!_isGrounded || _isAttacking) {
                 return;
             }
 
-            _rigidBody.AddForce(Vector2.up * jumpForce, ForceMode2D.Impulse);
+            _rigidBody.AddForce(Vector2.up * _jumpForce, ForceMode2D.Impulse);
             _isGrounded = false;
         }
 
         private void OnAttack(InputAction.CallbackContext context) {
-            if (_isAttacking) {
+            if (_isAttacking || !_canAttack) {
                 return;
             }
 
@@ -109,6 +121,9 @@ namespace deltaformer {
             _hitboxCollider.enabled = true;
 
             _animator.SetTrigger("Attack");
+
+            // push slightly towards the direction we're facing
+            _rigidBody.AddForce(_currentLookDirection * _attackPushForce, ForceMode2D.Impulse);
 
             if (_currentLookDirection.x > 0) {
                 _hitboxCollider.transform.localPosition = new Vector3(0.5f, 0, 0);
@@ -121,17 +136,25 @@ namespace deltaformer {
         }
 
         private IEnumerator OnAttackEnd() {
-            yield return new WaitForSeconds(0.2f);
+            _canAttack = false;
+            yield return new WaitForSeconds(_attackDuration);
             _hitboxCollider.enabled = false;
             _isAttacking = false;
             _hitboxCollider.transform.localPosition = new Vector3(0, 0, 0);
+
+            yield return new WaitForSeconds(_attackCooldown);
+            _canAttack = true;
         }
 
         private void FixedUpdate() {
             _isGrounded = _rigidBody.IsTouching(GroundFilter);
 
+            if (_isAttacking) {
+                return;
+            }
+
             // Set horizontal speed, but preserve the current falling/rising Y physics speed
-            _rigidBody.linearVelocity = new Vector2(_moveDirection.x * speed, _rigidBody.linearVelocity.y);
+            _rigidBody.linearVelocity = new Vector2(_moveDirection.x * _speed, _rigidBody.linearVelocity.y);
         }
 
         private void Update() {
@@ -156,7 +179,7 @@ namespace deltaformer {
                 return;
             }
 
-            StartCoroutine(HandleHitInvincibility(invincibilityTime));
+            StartCoroutine(HandleHitInvincibility(_invincibilityTime));
 
             OnPlayerDamaged.Invoke();
 
