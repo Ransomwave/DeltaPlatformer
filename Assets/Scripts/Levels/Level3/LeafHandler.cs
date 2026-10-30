@@ -7,7 +7,6 @@ namespace deltaformer {
     [RequireComponent(typeof(SpriteRenderer))]
     public class LeafHandler : MonoBehaviour {
         [SerializeField] private bool _shouldFall = false;
-        [SerializeField] private float _fallDelay = 1f;
         [SerializeField] private float _recoverAfter = 1f;
         [SerializeField] private float _animationTime = .2f;
         [SerializeField] private Sprite[] _leafFrames;
@@ -28,7 +27,10 @@ namespace deltaformer {
             for (var i = 0; i < _leafFrames.Length; i++) {
                 _currentFrame = i;
                 _spriteRenderer.sprite = _leafFrames[i];
-                yield return new WaitForSeconds(_animationTime);
+
+                if (i != _leafFrames.Length) {
+                    yield return new WaitForSeconds(_animationTime);
+                }
             }
 
             yield return StartCoroutine(Fall());
@@ -55,8 +57,13 @@ namespace deltaformer {
             _collider.enabled = true;
         }
 
-        private void OnCollisionEnter2D(Collision2D collision) {
-            if (!collision.gameObject.name.Contains("Player") || !_shouldFall) {
+        private void OnCollisionStay2D(Collision2D collision) {
+            if (!collision.gameObject.name.Contains("Player") || !_shouldFall || _fallCoroutine != null) {
+                return;
+            }
+
+            // don't trigger the leaf if the player is passing through it
+            if (collision.collider.bounds.min.y < _collider.bounds.max.y - 0.05f) {
                 return;
             }
 
