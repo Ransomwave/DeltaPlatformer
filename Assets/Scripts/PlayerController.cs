@@ -171,13 +171,13 @@ namespace deltaformer {
         }
 
         public void TakeDamage(int damage) {
-            _hp -= damage;
-
-            print($"Player took {damage} damage! HP: {_hp}");
-
             if (_isInvincible) {
                 return;
             }
+
+            _hp -= damage;
+
+            print($"Player took {damage} damage! HP: {_hp}");
 
             StartCoroutine(HandleHitInvincibility(_invincibilityTime));
 

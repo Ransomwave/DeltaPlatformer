@@ -73,16 +73,11 @@ namespace deltaformer {
         
 
         private void OnCollisionEnter2D(Collision2D other) {
-            if(!_canHit) return;
-            
-            
-            if (!other.gameObject.tag.Contains("Player")) {
-                TryGetComponent<ILivingEntity>(out ILivingEntity livingEntity);
-                if (livingEntity is not null) {
-                    livingEntity.TakeDamage(_damage);
-                }
+            if (!_canHit) return;
+
+            if (other.gameObject.CompareTag("Player") && other.gameObject.TryGetComponent<ILivingEntity>(out var livingEntity)) {
+                livingEntity.TakeDamage(_damage);
             }
-            
         }
     }
 }
