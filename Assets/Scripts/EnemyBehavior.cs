@@ -1,4 +1,4 @@
-using System;
+using System.Collections;
 using UnityEngine;
 
 namespace deltaformer {
@@ -67,8 +67,24 @@ namespace deltaformer {
             Destroy(gameObject);
         }
 
+        private IEnumerator FlashRed(float duration = 0.3f) {
+            var originalColor = _spriteRenderer.color;
+            var elapsed = 0f;
+
+            while (elapsed < duration) {
+                elapsed += Time.deltaTime;
+                _spriteRenderer.color = Color.Lerp(Color.red, originalColor, elapsed / duration);
+                yield return null;
+            }
+
+            _spriteRenderer.color = originalColor;
+
+        }
+
         public void TakeDamage(int damage) {
             _hp -= damage;
+            print($"Enemy took {damage} damage, HP: {_hp}");
+            StartCoroutine(FlashRed());
         }
 
 

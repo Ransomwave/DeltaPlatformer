@@ -132,7 +132,6 @@ namespace deltaformer {
             }
 
             StartCoroutine(OnAttackEnd());
-            print("Player attacked!!!");
         }
 
         private IEnumerator OnAttackEnd() {
@@ -177,7 +176,7 @@ namespace deltaformer {
 
             _hp -= damage;
 
-            print($"Player took {damage} damage! HP: {_hp}");
+            print($"Player hit, HP: {_hp}");
 
             StartCoroutine(HandleHitInvincibility(_invincibilityTime));
 
