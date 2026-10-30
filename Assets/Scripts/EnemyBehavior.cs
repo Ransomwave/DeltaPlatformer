@@ -3,8 +3,8 @@ using UnityEngine;
 
 namespace deltaformer {
     public class EnemyBehavior : MonoBehaviour, ILivingEntity {
-        [Header("Enemy settings")] [SerializeField]
-        private int _hp = 2;
+        [Header("Enemy settings")]
+        [SerializeField] private int _hp = 2;
         [SerializeField] private int _damage = 1;
 
         [SerializeField] private float _velocity = 2f;
@@ -57,7 +57,7 @@ namespace deltaformer {
         }
 
         private void Flip(bool right) {
-            if (_spriteRenderer is not null) {
+            if (_spriteRenderer != null) {
                 _spriteRenderer.flipX = right;
             }
         }
@@ -66,11 +66,11 @@ namespace deltaformer {
             _hp = 0;
             Destroy(gameObject);
         }
-        
+
         public void TakeDamage(int damage) {
             _hp -= damage;
         }
-        
+
 
         private void OnCollisionEnter2D(Collision2D other) {
             if (!_canHit) return;
