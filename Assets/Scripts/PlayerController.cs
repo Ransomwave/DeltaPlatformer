@@ -16,13 +16,13 @@ namespace deltaformer {
         private const float _attackPushForce = 5f; // Force applied when attacking
         private const float _attackDuration = 0.2f;
 
-
         private int _hp = 3;
 
         private Vector2 _moveDirection;
         private Vector2 _currentLookDirection = Vector2.right;
 
         private Rigidbody2D _rigidBody;
+        private Collider2D _playerCollider; // Guardamos el colisionador del cuerpo del jugador
         private Collider2D _hitboxCollider;
 
         private bool _canAttack = true;
@@ -53,6 +53,7 @@ namespace deltaformer {
             _animator = GetComponentInChildren<Animator>();
             _spriteRenderer = GetComponentInChildren<SpriteRenderer>();
             _rigidBody = GetComponent<Rigidbody2D>();
+            _playerCollider = GetComponent<Collider2D>(); // Obtenemos el colisionador principal del cuerpo
             _hitboxCollider = transform.Find("Hitbox").GetComponent<Collider2D>();
 
             _moveAction = InputSystem.actions.FindAction("Player/Move");
@@ -158,10 +159,54 @@ namespace deltaformer {
         }
 
         private void Update() {
+            if (!_isAttacking) {
+                _moveDirection = _moveAction.ReadValue<Vector2>();
+            }
+
+            // DETECCION DE BAJADA DE PLATAFORMA (Corregido para ignorar al propio jugador)
+            if (_moveDirection.y < -0.5f && _isGrounded) {
+                Vector2 posicionPies = new Vector2(transform.position.x, transform.position.y - 1.1f);
+                Vector2 tamanoCaja = new Vector2(0.6f, 0.3f);
+
+                // Recogemos todos los colisionadores debajo de los pies
+                Collider2D[] colisionesDetectadas = Physics2D.OverlapBoxAll(posicionPies, tamanoCaja, 0f);
+
+                foreach (Collider2D col in colisionesDetectadas) {
+                    // Si el colisionador no soy yo mismo y tiene el PlatformEffector2D
+                    if (col != _playerCollider && col.GetComponent<PlatformEffector2D>() != null) {
+                        StartCoroutine(DesactivarColisionTemporal(col));
+                        break; // Salimos del bucle una vez encontrada la plataforma
+                    }
+                }
+            }
+
             _animator.SetFloat("Speed", Mathf.Abs(_moveDirection.x));
             _spriteRenderer.flipX = _currentLookDirection.x < 0;
             _animator.SetBool("IsGrounded", _isGrounded);
             _animator.SetFloat("VerticalSpeed", _rigidBody.linearVelocity.y);
+        }
+
+        private IEnumerator DesactivarColisionTemporal(Collider2D plataformaCollider) {
+            // Buscamos el componente colisionador del Tilemap entero
+            Collider2D tilemapColliderCompleto = plataformaCollider.gameObject.GetComponent<Collider2D>();
+
+            if (tilemapColliderCompleto != null) {
+                Physics2D.IgnoreCollision(_playerCollider, tilemapColliderCompleto, true);
+                _isGrounded = false;
+
+                // Tiempo para atravesar el grosor del bloque
+                yield return new WaitForSeconds(0.80f);
+
+                if (tilemapColliderCompleto != null) {
+                    Physics2D.IgnoreCollision(_playerCollider, tilemapColliderCompleto, false);
+                }
+            }
+        }
+
+        private void OnDrawGizmos() {
+            Gizmos.color = Color.cyan;
+            Vector2 posicionPies = new Vector2(transform.position.x, transform.position.y - 1.1f);
+            Gizmos.DrawWireCube(posicionPies, new Vector2(0.6f, 0.3f));
         }
 
         public IEnumerator HandleHitInvincibility(float duration) {
