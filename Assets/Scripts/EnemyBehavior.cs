@@ -1,10 +1,10 @@
-using System;
+using System.Collections;
 using UnityEngine;
 
 namespace deltaformer {
     public class EnemyBehavior : MonoBehaviour, ILivingEntity {
-        [Header("Enemy settings")] [SerializeField]
-        private int _hp = 2;
+        [Header("Enemy settings")]
+        [SerializeField] private int _hp = 2;
         [SerializeField] private int _damage = 1;
 
         [SerializeField] private float _velocity = 2f;
@@ -57,7 +57,7 @@ namespace deltaformer {
         }
 
         private void Flip(bool right) {
-            if (_spriteRenderer is not null) {
+            if (_spriteRenderer != null) {
                 _spriteRenderer.flipX = right;
             }
         }
@@ -66,23 +66,34 @@ namespace deltaformer {
             _hp = 0;
             Destroy(gameObject);
         }
-        
+
+        private IEnumerator FlashRed(float duration = 0.3f) {
+            var originalColor = _spriteRenderer.color;
+            var elapsed = 0f;
+
+            while (elapsed < duration) {
+                elapsed += Time.deltaTime;
+                _spriteRenderer.color = Color.Lerp(Color.red, originalColor, elapsed / duration);
+                yield return null;
+            }
+
+            _spriteRenderer.color = originalColor;
+
+        }
+
         public void TakeDamage(int damage) {
             _hp -= damage;
+            print($"Enemy took {damage} damage, HP: {_hp}");
+            StartCoroutine(FlashRed());
         }
-        
+
 
         private void OnCollisionEnter2D(Collision2D other) {
-            if(!_canHit) return;
-            
-            
-            if (!other.gameObject.tag.Contains("Player")) {
-                TryGetComponent<ILivingEntity>(out ILivingEntity livingEntity);
-                if (livingEntity is not null) {
-                    livingEntity.TakeDamage(_damage);
-                }
+            if (!_canHit) return;
+
+            if (other.gameObject.CompareTag("Player") && other.gameObject.TryGetComponent<ILivingEntity>(out var livingEntity)) {
+                livingEntity.TakeDamage(_damage);
             }
-            
         }
     }
 }

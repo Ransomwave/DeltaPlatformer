@@ -10,6 +10,7 @@ GameObject:
   m_Component:
   - component: {fileID: 3154020838892577574}
   - component: {fileID: 7552771404544285470}
+  - component: {fileID: 4471902385710263519}
   m_Layer: 0
   m_Name: Hitbox
   m_TagString: Untagged
@@ -78,6 +79,19 @@ BoxCollider2D:
   m_AutoTiling: 0
   m_Size: {x: 1, y: 1}
   m_EdgeRadius: 0
+--- !u!114 &4471902385710263519
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2587657531317631650}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3f1c2a9e7b4d4e8a9c6b5d2e1f0a7c34, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::deltaformer.PlayerHitbox
+  _damage: 1
 --- !u!1 &5220929393160143774
 GameObject:
   m_ObjectHideFlags: 0
