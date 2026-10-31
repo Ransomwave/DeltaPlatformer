@@ -3,6 +3,7 @@ using System.Collections;
 using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using UnityEngine.Rendering;
 
 namespace deltaformer {
     [RequireComponent(typeof(Rigidbody2D))]
@@ -16,7 +17,8 @@ namespace deltaformer {
         private const float _attackPushForce = 5f; // Force applied when attacking
         private const float _attackDuration = 0.2f;
 
-        private int _hp = 3;
+        [SerializeField] private int _maxHP = 3;
+        public int HP { get; private set; }
 
         private Vector2 _moveDirection;
         private Vector2 _currentLookDirection = Vector2.right;
@@ -46,10 +48,11 @@ namespace deltaformer {
         };
 
         public event Action OnPlayerAttack = delegate { };
-        public event Action OnPlayerDie = delegate { };
+        public event Action OnPlayerDeath = delegate { };
         public event Action OnPlayerDamaged = delegate { };
 
         private void Awake() {
+            HP = _maxHP;
             _animator = GetComponentInChildren<Animator>();
             _spriteRenderer = GetComponentInChildren<SpriteRenderer>();
             _rigidBody = GetComponent<Rigidbody2D>();
@@ -202,16 +205,16 @@ namespace deltaformer {
             }
         }
 
-        private void OnDrawGizmos() {
-            Gizmos.color = Color.cyan;
-            Vector2 posicionPies = new Vector2(transform.position.x, transform.position.y - 1.1f);
-            Gizmos.DrawWireCube(posicionPies, new Vector2(0.6f, 0.3f));
-        }
-
         public IEnumerator HandleHitInvincibility(float duration) {
             _isInvincible = true;
             yield return new WaitForSeconds(duration);
             _isInvincible = false;
+        }
+
+        public void Respawn(Vector3 position) {
+            _rigidBody.linearVelocity = Vector2.zero;
+            transform.position = position;
+            HP = _maxHP;
         }
 
         public void TakeDamage(int damage) {
@@ -219,16 +222,16 @@ namespace deltaformer {
                 return;
             }
 
-            _hp -= damage;
+            HP -= damage;
 
-            print($"Player hit, HP: {_hp}");
+            print($"Player hit, HP: {HP}");
 
             StartCoroutine(HandleHitInvincibility(_invincibilityTime));
 
             OnPlayerDamaged.Invoke();
 
-            if (_hp <= 0) {
-                OnPlayerDie.Invoke();
+            if (HP <= 0) {
+                OnPlayerDeath.Invoke();
             }
         }
     }
