@@ -1,9 +1,7 @@
 using System;
 using System.Collections;
-using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.InputSystem;
-using UnityEngine.Rendering;
 
 namespace deltaformer {
     [RequireComponent(typeof(Rigidbody2D))]
@@ -11,20 +9,22 @@ namespace deltaformer {
         [SerializeField] private float _speed = 6f;
         [SerializeField] private float _jumpForce = 10f;
         [SerializeField] private float _invincibilityTime = 1f; // Invincibility time in seconds after taking damage
+        [SerializeField] private int _maxHP = 3;
 
         [Header("Attack Settings")]
         [SerializeField] private float _attackCooldown = 0.3f;
-        private const float _attackPushForce = 5f; // Force applied when attacking
-        private const float _attackDuration = 0.2f;
+        private const float AttackPushForce = 5f; // Force applied when attacking
+        private const float AttackDuration = 0.2f;
 
-        [SerializeField] private int _maxHP = 3;
+        private const float DropThroughDuration = 0.8f;
+
         public int HP { get; private set; }
 
         private Vector2 _moveDirection;
         private Vector2 _currentLookDirection = Vector2.right;
 
         private Rigidbody2D _rigidBody;
-        private Collider2D _playerCollider; // Guardamos el colisionador del cuerpo del jugador
+        private Collider2D _playerCollider;
         private Collider2D _hitboxCollider;
 
         private bool _canAttack = true;
@@ -56,7 +56,7 @@ namespace deltaformer {
             _animator = GetComponentInChildren<Animator>();
             _spriteRenderer = GetComponentInChildren<SpriteRenderer>();
             _rigidBody = GetComponent<Rigidbody2D>();
-            _playerCollider = GetComponent<Collider2D>(); // Obtenemos el colisionador principal del cuerpo
+            _playerCollider = GetComponent<Collider2D>();
             _hitboxCollider = transform.Find("Hitbox").GetComponent<Collider2D>();
 
             _moveAction = InputSystem.actions.FindAction("Player/Move");
@@ -127,7 +127,7 @@ namespace deltaformer {
             _animator.SetTrigger("Attack");
 
             // push slightly towards the direction we're facing
-            _rigidBody.AddForce(_currentLookDirection * _attackPushForce, ForceMode2D.Impulse);
+            _rigidBody.AddForce(_currentLookDirection * AttackPushForce, ForceMode2D.Impulse);
 
             if (_currentLookDirection.x > 0) {
                 _hitboxCollider.transform.localPosition = new Vector3(0.5f, 0, 0);
@@ -140,10 +140,10 @@ namespace deltaformer {
 
         private IEnumerator OnAttackEnd() {
             _canAttack = false;
-            yield return new WaitForSeconds(_attackDuration);
+            yield return new WaitForSeconds(AttackDuration);
             _hitboxCollider.enabled = false;
             _isAttacking = false;
-            _hitboxCollider.transform.localPosition = new Vector3(0, 0, 0);
+            _hitboxCollider.transform.localPosition = Vector3.zero;
 
             yield return new WaitForSeconds(_attackCooldown);
             _canAttack = true;
@@ -165,19 +165,15 @@ namespace deltaformer {
                 _moveDirection = _moveAction.ReadValue<Vector2>();
             }
 
-            // DETECCION DE BAJADA DE PLATAFORMA (Corregido para ignorar al propio jugador)
+            // drop through one-way platforms when holding down
             if (_moveDirection.y < -0.5f && _isGrounded) {
-                Vector2 posicionPies = new Vector2(transform.position.x, transform.position.y - 1.1f);
-                Vector2 tamanoCaja = new Vector2(0.6f, 0.3f);
+                var feetPosition = new Vector2(transform.position.x, transform.position.y - 1.1f);
+                var feetBoxSize = new Vector2(0.6f, 0.3f);
 
-                // Recogemos todos los colisionadores debajo de los pies
-                Collider2D[] colisionesDetectadas = Physics2D.OverlapBoxAll(posicionPies, tamanoCaja, 0f);
-
-                foreach (Collider2D col in colisionesDetectadas) {
-                    // Si el colisionador no soy yo mismo y tiene el PlatformEffector2D
-                    if (col != _playerCollider && col.GetComponent<PlatformEffector2D>() != null) {
-                        StartCoroutine(DesactivarColisionTemporal(col));
-                        break; // Salimos del bucle una vez encontrada la plataforma
+                foreach (var collider in Physics2D.OverlapBoxAll(feetPosition, feetBoxSize, 0f)) {
+                    if (collider != _playerCollider && collider.GetComponent<PlatformEffector2D>() != null) {
+                        StartCoroutine(DropThroughPlatform(collider));
+                        break;
                     }
                 }
             }
@@ -188,24 +184,18 @@ namespace deltaformer {
             _animator.SetFloat("VerticalSpeed", _rigidBody.linearVelocity.y);
         }
 
-        private IEnumerator DesactivarColisionTemporal(Collider2D plataformaCollider) {
-            // Buscamos el componente colisionador del Tilemap entero
-            Collider2D tilemapColliderCompleto = plataformaCollider.gameObject.GetComponent<Collider2D>();
+        private IEnumerator DropThroughPlatform(Collider2D platformCollider) {
+            Physics2D.IgnoreCollision(_playerCollider, platformCollider, true);
+            _isGrounded = false;
 
-            if (tilemapColliderCompleto != null) {
-                Physics2D.IgnoreCollision(_playerCollider, tilemapColliderCompleto, true);
-                _isGrounded = false;
+            yield return new WaitForSeconds(DropThroughDuration);
 
-                // Tiempo para atravesar el grosor del bloque
-                yield return new WaitForSeconds(0.80f);
-
-                if (tilemapColliderCompleto != null) {
-                    Physics2D.IgnoreCollision(_playerCollider, tilemapColliderCompleto, false);
-                }
+            if (platformCollider != null) {
+                Physics2D.IgnoreCollision(_playerCollider, platformCollider, false);
             }
         }
 
-        public IEnumerator HandleHitInvincibility(float duration) {
+        private IEnumerator HandleHitInvincibility(float duration) {
             _isInvincible = true;
             yield return new WaitForSeconds(duration);
             _isInvincible = false;
