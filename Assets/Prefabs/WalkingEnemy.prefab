@@ -237,11 +237,6 @@ MonoBehaviour:
   _hp: 4
   _damage: 1
   _velocity: 2
-<<<<<<< HEAD
-  _distance: 4
-  _sprite: {fileID: 0}
-=======
   _distance: 6
   _sprite: {fileID: 2435112826652663901}
->>>>>>> main
   _canHit: 0

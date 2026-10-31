@@ -12,7 +12,7 @@ namespace deltaformer {
 
         [Header("Encuadre Inicial Vertical")]
         [Tooltip("Ajusta este valor en el editor para bajar el fondo y mostrar de la mitad para abajo al iniciar")]
-        public float desfaseVerticalInicial = 4f;
+        public float desfaseVerticalInicial = 2f;
 
         private Transform camaraTransform;
         private float posicionInicialX;
@@ -46,7 +46,7 @@ namespace deltaformer {
 
             // Añadimos un pequeño margen (ej. 2 unidades de Unity) para que el salto ocurra ANTES 
             // de que la pantalla llegue al borde visible de la repetición.
-            float margenSeguridad = 2.0f;
+            float margenSeguridad = 5.0f;
 
             if (distanciaRelativaCamara > posicionInicialX + longitudSprite - margenSeguridad) {
                 posicionInicialX += longitudSprite;
