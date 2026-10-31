@@ -11,7 +11,7 @@ namespace deltaformer {
 
         private void Awake() {
             _stoneStartPos = _stone.transform.position;
-            _stoneTargetPos = new Vector2(0, -2.5f);
+            _stoneTargetPos = _stoneStartPos + new Vector2(0, -4.8f);
             _hitbox = GetComponentInChildren<Hitbox>();
             _stoneRb = _stone.GetComponent<Rigidbody2D>();
         }
@@ -32,7 +32,7 @@ namespace deltaformer {
         }
 
         private IEnumerator MoveStone(Vector2 origin, Vector2 target) {
-            yield return new WaitForSeconds(1);
+            yield return new WaitForSeconds(.5f);
 
             var duration = 1f;
             var elapsed = 0f;
