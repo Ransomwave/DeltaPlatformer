@@ -212,5 +212,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::EnemyBehavior
   _hp: 4
+  _damage: 1
   _velocity: 2
   _distance: 4
+  _sprite: {fileID: 0}
+  _canHit: 0
